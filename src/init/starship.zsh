@@ -23,42 +23,39 @@ else
     }
 fi
 
-# Will be run before every prompt draw
-starship_precmd() {
-    # Save the status, because commands in this pipeline will change $?
+# The two functions below follow the naming convention `prompt_<theme>_<hook>`
+# for compatibility with Zsh's prompt system. See
+# https://github.com/zsh-users/zsh/blob/2876c25a28b8052d6683027998cc118fc9b50157/Functions/Prompts/promptinit#L155
+
+# Runs before each new command line.
+prompt_starship_precmd() {
+    # Save the status, because subsequent commands in this function will change $?
     STARSHIP_CMD_STATUS=$? STARSHIP_PIPE_STATUS=(${pipestatus[@]})
 
-    # Compute cmd_duration, if we have a time to consume, otherwise clear the
-    # previous duration
+    # Calculate duration if a command was executed
     if (( ${+STARSHIP_START_TIME} )); then
         __starship_get_time && (( STARSHIP_DURATION = STARSHIP_CAPTURED_TIME - STARSHIP_START_TIME ))
         unset STARSHIP_START_TIME
+    # Drop status and duration otherwise
     else
-        unset STARSHIP_DURATION
+        unset STARSHIP_DURATION STARSHIP_CMD_STATUS STARSHIP_PIPE_STATUS
     fi
 
     # Use length of jobstates array as number of jobs. Expansion fails inside
     # quotes so we set it here and then use the value later on.
     STARSHIP_JOBS_COUNT=${#jobstates}
 }
-starship_preexec() {
+
+# Runs after the user submits the command line, but before it is executed and
+# only if there's an actual command to run
+prompt_starship_preexec() {
     __starship_get_time && STARSHIP_START_TIME=$STARSHIP_CAPTURED_TIME
 }
 
-# If precmd/preexec arrays are not already set, set them. If we don't do this,
-# the code to detect whether starship_precmd is already in precmd_functions will
-# fail because the array doesn't exist (and same for starship_preexec)
-(( ! ${+precmd_functions} )) && precmd_functions=()
-(( ! ${+preexec_functions} )) && preexec_functions=()
-
-# If starship precmd/preexec functions are already hooked, don't double-hook them
-# to avoid unnecessary performance degradation in nested shells
-if [[ -z ${precmd_functions[(re)starship_precmd]} ]]; then
-    precmd_functions+=(starship_precmd)
-fi
-if [[ -z ${preexec_functions[(re)starship_preexec]} ]]; then
-    preexec_functions+=(starship_preexec)
-fi
+# Add hook functions
+autoload -Uz add-zsh-hook
+add-zsh-hook precmd prompt_starship_precmd
+add-zsh-hook preexec prompt_starship_preexec
 
 # Set up a function to redraw the prompt if the user switches vi modes
 starship_zle-keymap-select() {
@@ -79,8 +76,6 @@ else
     zle -N zle-keymap-select starship_zle-keymap-select-wrapped;
 fi
 
-__starship_get_time && STARSHIP_START_TIME=$STARSHIP_CAPTURED_TIME
-
 export STARSHIP_SHELL="zsh"
 
 # Set up the session key that will be used to store logs
@@ -92,7 +87,6 @@ VIRTUAL_ENV_DISABLE_PROMPT=1
 
 setopt promptsubst
 
-PROMPT='$(::STARSHIP:: prompt --terminal-width="$COLUMNS" --keymap="${KEYMAP:-}" --status="$STARSHIP_CMD_STATUS" --pipestatus="${STARSHIP_PIPE_STATUS[*]}" --cmd-duration="${STARSHIP_DURATION:-}" --jobs="$STARSHIP_JOBS_COUNT")'
-RPROMPT='$(::STARSHIP:: prompt --right --terminal-width="$COLUMNS" --keymap="${KEYMAP:-}" --status="$STARSHIP_CMD_STATUS" --pipestatus="${STARSHIP_PIPE_STATUS[*]}" --cmd-duration="${STARSHIP_DURATION:-}" --jobs="$STARSHIP_JOBS_COUNT")'
+PROMPT='$('::STARSHIP::' prompt --terminal-width="$COLUMNS" --keymap="${KEYMAP:-}" --status="$STARSHIP_CMD_STATUS" --pipestatus="${STARSHIP_PIPE_STATUS[*]}" --cmd-duration="${STARSHIP_DURATION:-}" --jobs="$STARSHIP_JOBS_COUNT")'
+RPROMPT='$('::STARSHIP::' prompt --right --terminal-width="$COLUMNS" --keymap="${KEYMAP:-}" --status="$STARSHIP_CMD_STATUS" --pipestatus="${STARSHIP_PIPE_STATUS[*]}" --cmd-duration="${STARSHIP_DURATION:-}" --jobs="$STARSHIP_JOBS_COUNT")'
 PROMPT2="$(::STARSHIP:: prompt --continuation)"
-

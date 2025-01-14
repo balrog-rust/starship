@@ -1,4 +1,4 @@
-use super::{Context, Module, RootModuleConfig};
+use super::{Context, Module, ModuleConfig};
 
 use crate::configs::cmd_duration::CmdDurationConfig;
 use crate::formatter::StringFormatter;
@@ -48,43 +48,57 @@ pub fn module<'a>(context: &'a Context) -> Option<Module<'a>> {
         }
     });
 
-    Some(undistract_me(module, &config, elapsed))
+    Some(undistract_me(module, &config, context, elapsed))
 }
 
-#[cfg(not(feature = "notify-rust"))]
-fn undistract_me<'a, 'b>(
+#[cfg(not(feature = "notify"))]
+fn undistract_me<'a>(
     module: Module<'a>,
-    config: &'b CmdDurationConfig,
+    _config: &CmdDurationConfig,
+    _context: &'a Context,
     _elapsed: u128,
 ) -> Module<'a> {
-    if config.show_notifications {
-        log::debug!("This version of starship was built without notification support.");
-    }
-
     module
 }
 
-#[cfg(feature = "notify-rust")]
-fn undistract_me<'a, 'b>(
+#[cfg(feature = "notify")]
+fn undistract_me<'a>(
     module: Module<'a>,
-    config: &'b CmdDurationConfig,
+    config: &CmdDurationConfig,
+    context: &'a Context,
     elapsed: u128,
 ) -> Module<'a> {
-    use ansi_term::{unstyle, ANSIStrings};
     use notify_rust::{Notification, Timeout};
+    use nu_ansi_term::{unstyle, AnsiStrings};
 
     if config.show_notifications && config.min_time_to_notify as u128 <= elapsed {
+        if cfg!(target_os = "linux") {
+            let in_graphical_session = ["DISPLAY", "WAYLAND_DISPLAY", "MIR_SOCKET"]
+                .iter()
+                .find_map(|&var| context.get_env(var).filter(|val| !val.is_empty()))
+                .is_some();
+
+            if !in_graphical_session {
+                return module;
+            };
+        }
+
         let body = format!(
             "Command execution {}",
-            unstyle(&ANSIStrings(&module.ansi_strings()))
+            unstyle(&AnsiStrings(&module.ansi_strings()))
         );
+
+        let timeout = match config.notification_timeout {
+            Some(v) => Timeout::Milliseconds(v),
+            None => Timeout::Default,
+        };
 
         let mut notification = Notification::new();
         notification
             .summary("Command finished")
             .body(&body)
             .icon("utilities-terminal")
-            .timeout(Timeout::Milliseconds(750));
+            .timeout(timeout);
 
         if let Err(err) = notification.show() {
             log::trace!("Cannot show notification: {}", err);
@@ -97,7 +111,7 @@ fn undistract_me<'a, 'b>(
 #[cfg(test)]
 mod tests {
     use crate::test::ModuleRenderer;
-    use ansi_term::Color;
+    use nu_ansi_term::Color;
 
     #[test]
     fn config_blank_duration_1s() {

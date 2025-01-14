@@ -8,6 +8,98 @@ Các tùy chỉnh được mô tả trong phần này có thể sẽ thay đổi
 
 :::
 
+## TransientPrompt in PowerShell
+
+It is possible to replace the previous-printed prompt with a custom string. This is useful in cases where all the prompt information is not always needed. To enable this, run `Enable-TransientPrompt` in the shell session. To make it permanent, put this statement in your `$PROFILE`. Transience can be disabled on-the-fly with `Disable-TransientPrompt`.
+
+By default, the left side of input gets replaced with `>`. To customize this, define a new function called `Invoke-Starship-TransientFunction`. For example, to display Starship's `character` module here, you would do
+
+```powershell
+function Invoke-Starship-TransientFunction {
+  &starship module character
+}
+
+Invoke-Expression (&starship init powershell)
+
+Enable-TransientPrompt
+```
+
+## TransientPrompt and TransientRightPrompt in Cmd
+
+Clink allows you to replace the previous-printed prompt with custom strings. This is useful in cases where all the prompt information is not always needed. To enable this, run `clink set prompt.transient <value>` where \<value\> can be one of:
+
+- `always`: always replace the previous prompt
+- `same_dir`: replace the previous prompt only if the working directory is same
+- `off`: do not replace the prompt (i.e. turn off transience)
+
+You need to do this only once. Make the following changes to your `starship.lua` to customize what gets displayed on the left and on the right:
+
+- By default, the left side of input gets replaced with `>`. To customize this, define a new function called `starship_transient_prompt_func`. This function receives the current prompt as a string that you can utilize. For example, to display Starship's `character` module here, you would do
+
+```lua
+function starship_transient_prompt_func(prompt)
+  return io.popen("starship module character"
+    .." --keymap="..rl.getvariable('keymap')
+  ):read("*a")
+end
+load(io.popen('starship init cmd'):read("*a"))()
+```
+
+- By default, the right side of input is empty. To customize this, define a new function called `starship_transient_rprompt_func`. This function receives the current prompt as a string that you can utilize. For example, to display the time at which the last command was started here, you would do
+
+```lua
+function starship_transient_rprompt_func(prompt)
+  return io.popen("starship module time"):read("*a")
+end
+load(io.popen('starship init cmd'):read("*a"))()
+```
+
+## TransientPrompt and TransientRightPrompt in Fish
+
+It is possible to replace the previous-printed prompt with a custom string. This is useful in cases where all the prompt information is not always needed. To enable this, run `enable_transience` in the shell session. To make it permanent, put this statement in your `~/.config/fish/config.fish`. Transience can be disabled on-the-fly with `disable_transience`.
+
+Note that in case of Fish, the transient prompt is only printed if the commandline is non-empty, and syntactically correct.
+
+- By default, the left side of input gets replaced with a bold-green `❯`. To customize this, define a new function called `starship_transient_prompt_func`. For example, to display Starship's `character` module here, you would do
+
+```fish
+function starship_transient_prompt_func
+  starship module character
+end
+starship init fish | source
+enable_transience
+```
+
+- By default, the right side of input is empty. To customize this, define a new function called `starship_transient_rprompt_func`. For example, to display the time at which the last command was started here, you would do
+
+```fish
+function starship_transient_rprompt_func
+  starship module time
+end
+starship init fish | source
+enable_transience
+```
+
+## TransientPrompt and TransientRightPrompt in Bash
+
+The [Ble.sh](https://github.com/akinomyoga/ble.sh) framework at v0.4 or higher allows you to replace the previous-printed prompt with custom strings. This is useful in cases where all the prompt information is not always needed. To enable this, put this in `~/.bashrc` `bleopt prompt_ps1_transient=<value>`:
+
+The \<value\> here is a colon-separated list of `always`, `same-dir` and `trim`. When `prompt_ps1_final` is empty and the option `prompt_ps1_transient` has a non-empty \<value\>, the prompt specified by `PS1` is erased on leaving the current command line. If \<value\> contains a field `trim`, only the last line of multiline `PS1` is preserved and the other lines are erased. Otherwise, the command line will be redrawn as if `PS1=` is specified. When a field `same-dir` is contained in \<value\> and the current working directory is different from the final directory of the previous command line, this option `prompt_ps1_transient` is ignored.
+
+Make the following changes to your `~/.blerc` (or in `~/.config/blesh/init.sh`) to customize what gets displayed on the left and on the right:
+
+- To customize what the left side of input gets replaced with, configure the `prompt_ps1_final` Ble.sh option. For example, to display Starship's `character` module here, you would do
+
+```bash
+bleopt prompt_ps1_final='$(starship module character)'
+```
+
+- To customize what the right side of input gets replaced with, configure the `prompt_rps1_final` Ble.sh option. For example, to display the time at which the last command was started here, you would do
+
+```bash
+bleopt prompt_rps1_final='$(starship module time)'
+```
+
 ## Custom pre-prompt and pre-execution Commands in Cmd
 
 Clink provides extremely flexible APIs to run pre-prompt and pre-exec commands in Cmd shell. It is fairly simple to use with Starship. Make the following changes to your `starship.lua` file as per your requirements:
@@ -32,11 +124,11 @@ end
 load(io.popen('starship init cmd'):read("*a"))()
 ```
 
-## Custom pre-prompt and pre-execution Commands in Bash
+## Tùy chỉnh các hàm được thực thi trước prompt và các lệnh Linux mặc định của bash shell
 
-Bash does not have a formal preexec/precmd framework like most other shells. Because of this, it is difficult to provide fully customizable hooks in `bash`. Tuy nhiên, Starship cho phép bạn viết các hàm riêng của bạn để tùy biến việc render prompt:
+Bash không có một preexec/precmd framework chính thống giống như các shells khác. Do đó rất khó để cung cấp các hook với khả năng tuỳ biến hoàn toàn cho `bash` shell. Tuy nhiên, Starship cho phép bạn viết các hàm riêng của bạn để tùy biến việc render prompt:
 
-- To run a custom function right before the prompt is drawn, define a new function and then assign its name to `starship_precmd_user_func`. For example, to draw a rocket before the prompt, you would do
+- Để thực thi một hàm custom trước khi prompt được render, ta cần định nghĩa một hàm mới và gán `starship_precmd_user_func` cho tên của hàm này. Ví dụ, để vẽ một tên lửa trước prompt
 
 ```bash
 function blastoff(){
@@ -45,14 +137,16 @@ function blastoff(){
 starship_precmd_user_func="blastoff"
 ```
 
-- To run a custom function right before a command runs, you can use the [`DEBUG` trap mechanism](https://jichu4n.com/posts/debug-trap-and-prompt_command-in-bash/). However, you **must** trap the DEBUG signal *before* initializing Starship! Starship can preserve the value of the DEBUG trap, but if the trap is overwritten after starship starts up, some functionality will break.
+- Để thực thi một hàm custom trước khi một câu lệnh Linux chạy, ta có thể sử dụng cơ chế bẫy tín hiệu [`DEBUG`](https://jichu4n.com/posts/debug-trap-and-prompt_command-in-bash/). Tuy nhiên, bạn **phải** đặt bẫy tín hiệu DEBUG _trước_ khởi tạo Starship! Starship có thể giữ giá trị của DEBUG trap, nhưng nếu trap bị ghi đè sau khi starship khởi động, một vài chức năng sẽ không hoạt động.
 
 ```bash
 function blastoff(){
     echo "🚀"
 }
 trap blastoff DEBUG     # Trap DEBUG *before* running starship
+set -o functrace
 eval $(starship init bash)
+set +o functrace
 ```
 
 ## Custom pre-prompt and pre-execution Commands in PowerShell
@@ -67,11 +161,11 @@ function Invoke-Starship-PreCommand {
 }
 ```
 
-## Change Window Title
+## Thay đổi tên gọi trên cửa sổ của chương trình terminal
 
-Some shell prompts will automatically change the window title for you (e.g. to reflect your working directory). Fish even does it by default. Starship does not do this, but it's fairly straightforward to add this functionality to `bash`, `zsh`, `cmd` or `powershell`.
+Một vài shell có khả năng tự động thay đổi tên hiển thị (chẳng hạn như tên của thư mục hiện thời) trên cửa số của trình mô phỏng terminal. Fish shell mặc định thực hiện thay đổi này. Starship does not do this, but it's fairly straightforward to add this functionality to `bash`, `zsh`, `cmd` or `powershell`.
 
-First, define a window title change function (identical in bash and zsh):
+Đầu tiên, ta cần định nghĩa một hàm thay đổi tiêu đề cửa sổ (dùng chung cho cả bash và zsh):
 
 ```bash
 function set_win_title(){
@@ -79,23 +173,23 @@ function set_win_title(){
 }
 ```
 
-You can use variables to customize this title (`$USER`, `$HOSTNAME`, and `$PWD` are popular choices).
+Ta có thể sử dụng biến số để tuỳ chỉnh tên hiển thị này (`$USER`, `$HOSTNAME`, và `$PWD` là những biến số thường được dùng).
 
-In `bash`, set this function to be the precmd starship function:
+Với `bash` shell, set precmd của starship bằng tên của hàm này:
 
 ```bash
 starship_precmd_user_func="set_win_title"
 ```
 
-In `zsh`, add this to the `precmd_functions` array:
+Với `zsh` shell, thêm hàm này vào mảng `precmd_functions`:
 
 ```bash
 precmd_functions+=(set_win_title)
 ```
 
-If you like the result, add these lines to your shell configuration file (`~/.bashrc` or `~/.zshrc`) to make it permanent.
+Nếu ta hài lòng với các tùy biến đã được thiết lập, thêm những dòng sau vào cấu hình shell (`~/.bashrc` hoặc `~/.zshrc`) để thực thi chúng mỗi khi ta khởi tạo một shell mới.
 
-For example, if you want to display your current directory in your terminal tab title, add the following snippet to your `~/.bashrc` or `~/.zshrc`:
+Ví dụ, nếu ta muốn hiển thị đường dẫn thư mục hiện tại trong tiêu đề của một terminal tab, thêm đoạn code sau vào `~/.bashrc` hoặc `~/.zshrc`:
 
 ```bash
 function set_win_title(){
@@ -119,7 +213,7 @@ You can also set a similar output with PowerShell by creating a function named `
 ```powershell
 # edit $PROFILE
 function Invoke-Starship-PreCommand {
-  $host.ui.Write("`e]0; PS> $env:USERNAME@$env:COMPUTERNAME`: $pwd `a")
+  $host.ui.RawUI.WindowTitle = "$env:USERNAME@$env:COMPUTERNAME`: $pwd `a"
 }
 
 Invoke-Expression (&starship init powershell)
@@ -129,9 +223,11 @@ Invoke-Expression (&starship init powershell)
 
 Some shells support a right prompt which renders on the same line as the input. Starship can set the content of the right prompt using the `right_format` option. Any module that can be used in `format` is also supported in `right_format`. The `$all` variable will only contain modules not explicitly used in either `format` or `right_format`.
 
-Note: The right prompt is a single line following the input location. To right align modules above the input line in a multi-line prompt, see the [fill module](/config/#fill).
+Note: The right prompt is a single line following the input location. To right align modules above the input line in a multi-line prompt, see the [`fill` module](../config/#fill).
 
-`right_format` is currently supported for the following shells: elvish, fish, zsh, xonsh, cmd.
+`right_format` is currently supported for the following shells: elvish, fish, zsh, xonsh, cmd, nushell, bash.
+
+Note: The [Ble.sh](https://github.com/akinomyoga/ble.sh) framework v0.4 or higher should be installed in order to use right prompt in bash.
 
 ### Ví dụ
 
@@ -155,47 +251,56 @@ Produces a prompt like the following:
 
 Some shells support a continuation prompt along with the normal prompt. This prompt is rendered instead of the normal prompt when the user has entered an incomplete statement (such as a single left parenthesis or quote).
 
-Starship can set the continuation prompt using the `continuation_prompt` option. The default prompt is `"[∙](bright-black) "`.
+Starship can set the continuation prompt using the `continuation_prompt` option. The default prompt is `'[∙](bright-black) '`.
 
 Note: `continuation_prompt` should be set to a literal string without any variables.
 
 Note: Continuation prompts are only available in the following shells:
 
-  - `bash`
-  - `zsh`
-  - `PowerShell`
+- `bash`
+- `zsh`
+- `PowerShell`
 
 ### Ví dụ
 
 ```toml
 # ~/.config/starship.toml
 
-# A continuation prompt that displays two filled in arrows
-continuation_prompt = "▶▶"
+# A continuation prompt that displays two filled-in arrows
+continuation_prompt = '▶▶ '
 ```
 
 ## Các chuỗi kiểu
 
-Style strings are a list of words, separated by whitespace. The words are not case sensitive (i.e. `bold` and `BoLd` are considered the same string). Each word can be one of the following:
+Chuỗi kiểu là một danh sách các từ, được phân cách bởi khoảng trắng. Các từ là không phân biệt hoa thường (ví dụ. `bold` và `Bold` là hai chuỗi tương đương). Mỗi từ có thể là một trong các từ sau:
 
-  - `bold`
-  - `italic`
-  - `underline`
-  - `dimmed`
-  - `inverted`
-  - `bg:<color>`
-  - `fg:<color>`
-  - `<color>`
-  - `none`
+- `bold`
+- `nghiêng`
+- `gạch dưới`
+- `làm tối đi`
+- `đảo ngược`
+- `blink`
+- `hidden`
+- `strikethrough`
+- `bg:<color>`
+- `fg:<color>`
+- `<color>`
+- `none`
 
-where `<color>` is a color specifier (discussed below). `fg:<color>` and `<color>` currently do the same thing, though this may change in the future. `inverted` swaps the background and foreground colors. The order of words in the string does not matter.
+`<color>` là một nơi quy định màu (được bàn luận ở phía dưới). `fg:<color>` and `<color>` currently do the same thing, though this may change in the future. `<color>` can also be set to `prev_fg` or `prev_bg` which evaluates to the previous item's foreground or background color respectively if available or `none` otherwise. `inverted` swaps the background and foreground colors. Thứ tự các từ trong chuỗi là không quan trọng.
 
-The `none` token overrides all other tokens in a string if it is not part of a `bg:` specifier, so that e.g. `fg:red none fg:blue` will still create a string with no styling. `bg:none` sets the background to the default color so `fg:red bg:none` is equivalent to `red` or `fg:red` and `bg:green fg:red bg:none` is also equivalent to `fg:red` or `red`. It may become an error to use `none` in conjunction with other tokens in the future.
+Từ mã `none` ghi đè tất cả các từ mã khác trong chuỗi nếu nó không là một phần của `bg:` specifier, vậy nên `fg:red none fg:blue` sẽ vẫn tạo một chuỗi mà không có kiểu. `bg:none` sets the background to the default color so `fg:red bg:none` is equivalent to `red` or `fg:red` and `bg:green fg:red bg:none` is also equivalent to `fg:red` or `red`. Nó có thể trở thành một lỗi để sử dụng `none` trong việc kết hợp với các từ mã khác trong tương lai.
 
-A color specifier can be one of the following:
+Một quy định màu có thể là một trong các thứ sau:
 
- - One of the standard terminal colors: `black`, `red`, `green`, `blue`, `yellow`, `purple`, `cyan`, `white`. You can optionally prefix these with `bright-` to get the bright version (e.g. `bright-white`).
- - A `#` followed by a six-digit hexadecimal number. This specifies an [RGB color hex code](https://www.w3schools.com/colors/colors_hexadecimal.asp).
- - A number between 0-255. This specifies an [8-bit ANSI Color Code](https://i.stack.imgur.com/KTSQa.png).
+- One of the standard terminal colors: `black`, `red`, `green`, `blue`, `yellow`, `purple`, `cyan`, `white`. You can optionally prefix these with `bright-` to get the bright version (e.g. `bright-white`).
+- Một `#` được theo sau bởi một số thập lục phân gồm sáu chữ số. Cái này quy định một [mã thập lục phân cho màu RGB](https://www.w3schools.com/colors/colors_hexadecimal.asp).
+- Một số nằm giữa 0-255. Cái này quy định một [mã màu ANSI 8-bit](https://i.stack.imgur.com/KTSQa.png).
 
-If multiple colors are specified for foreground/background, the last one in the string will take priority.
+Nếu nhiều màu được quy định cho màu chữ/màu nền, cái cuối cùng trong chuỗi sẽ được ưu tiên.
+
+Not every style string will be displayed correctly by every terminal. In particular, the following known quirks exist:
+
+- Many terminals disable support for `blink` by default.
+- `hidden` is [not supported on iTerm](https://gitlab.com/gnachman/iterm2/-/issues/4564).
+- `strikethrough` is not supported by the default macOS Terminal.app.

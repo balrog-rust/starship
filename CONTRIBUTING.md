@@ -8,9 +8,9 @@ If you have any questions that aren't addressed in this document, please don't h
 
 ## Glossary
 
-- **Module**: A component in the prompt giving information based on contextual information from your OS. For example, the `nodejs` module shows the version of NodeJS that is currently installed on your computer, if your current directory is a NodeJS project.
+- **Module**: A component in the prompt giving information based on contextual information from your OS. For example, the `rust` module shows the version of Rust that is currently installed on your computer, if your current directory is a Rust project.
 
-- **Segment**: Smaller sub-components that compose a module. For example, the `symbol` segment in the `nodejs` module contains the character that is shown before the version number (`⬢` by default).
+- **Segment**: Smaller subcomponents that compose a module. For example, the `symbol` segment in the `rust` module contains the character that is shown before the version number (`🦀` by default).
 
 ## Philosophy
 
@@ -50,10 +50,10 @@ pub fn module<'a>(context: &'a Context) -> Option<Module<'a>> {
 
 ## External commands
 
-To run a external command (e.g. to get the version of a tool) and to allow for mocking use the `context.exec_cmd` function. Here's a quick example:
+To run an external command (e.g. to get the version of a tool) and to allow for mocking use the `context.exec_cmd` function. Here's a quick example:
 
 ```rust
-use super::{Context, Module, RootModuleConfig};
+use super::{Context, Module, ModuleConfig};
 
 use crate::configs::php::PhpConfig;
 use crate::formatter::StringFormatter;
@@ -69,6 +69,47 @@ pub fn module<'a>(context: &'a Context) -> Option<Module<'a>> {
 ```
 
 If using `context.exec_cmd` isn't possible, please use `crate::utils::create_command` instead of `std::process::Command::new`.
+
+## Absolute Filenames
+
+To use absolute filenames in your module, use `crate::utils::context_path()` to create a `PathBuf` from an absolute pathname.
+In the test environment the root directory will be replaced with a `Tempdir`, which you can get via `ModuleRenderer::root_path()`.
+So, you can populate that mocked root directory with any files you want.
+
+```rust
+use crate::utils::context_path;
+
+pub fn module<'a>(context: &'a Context) -> Option<Module<'a>> {
+    if !context_path(context, "/run/test/testfile").exists() {
+        return None
+    }
+    // ..
+}
+```
+
+```rust
+#[test]
+fn test_testfile() {
+    let renderer = ModuleRenderer::new("mymodule");
+
+    let root_path = renderer.root_path();
+
+    // This creates `$TEMPDIR/run/test/testfile`
+
+    let mut absolute_test_file = PathBuf::from(root_path);
+
+    absolute_test_file.push("run");
+    absolute_test_file.push("test");
+    std::fs::DirBuilder::new()
+        .recursive(true)
+        .create(&absolute_test_file)?;
+
+    absolute_test_file.push("testfile");
+    std::fs::File::create(&absolute_test_file)?;
+
+    // ...
+}
+```
 
 ## Logging
 
@@ -86,7 +127,7 @@ STARSHIP_LOG=trace cargo run
 
 ## Linting
 
-Starship source files are linted with [clippy](https://crates.io/crates/clippy). Clippy will be ran as part of CI. Linting errors will fail a build, so it is suggested that you run Clippy locally:
+Starship source files are linted with [clippy](https://crates.io/crates/clippy). Clippy will be run as part of CI. Linting errors will fail a build, so it is suggested that you run Clippy locally:
 
 ```sh
 rustup component add clippy
@@ -113,6 +154,8 @@ dprint fmt
 
 Editor plugins/functionality may help you run these automatically so that you don't accidentally create a PR that fails.
 
+If your changes cause changes to the configuration, you will need to update the configuration schema in `.github/config-schema.json` with `cargo run --features config-schema -- config-schema > .github/config-schema.json`.
+
 ## Testing
 
 Testing is critical to making sure starship works as intended on systems big and small. Starship interfaces with many applications and system APIs when generating the prompt, so there's a lot of room for bugs to slip in.
@@ -122,7 +165,7 @@ Unit tests are written using the built-in Rust testing library in the same file 
 All tests that test the rendered output of a module should use `ModuleRenderer`. For Example:
 
 ```rust
-use super::{Context, Module, RootModuleConfig};
+use super::{Context, Module, ModuleConfig};
 
 use crate::configs::php::PhpConfig;
 use crate::formatter::StringFormatter;
@@ -137,7 +180,7 @@ pub fn module<'a>(context: &'a Context) -> Option<Module<'a>> {
 mod tests {
    use super::*;
    use crate::test::ModuleRenderer;
-   use ansi_term::Color;
+   use nu_ansi_term::Color;
    use std::fs::File;
    use std::io;
 
@@ -147,7 +190,7 @@ mod tests {
       // Here you setup the testing environment
       let tempdir = tempfile::tempdir()?;
       // Create some file needed to render the module
-      File::create(dir.path().join("YOUR_FILE"))?.sync_all()?;
+      File::create(tempdir.path().join("YOUR_FILE"))?.sync_all()?;
 
       // The output of the module
       let actual = ModuleRenderer::new("YOUR_MODULE_NAME")
@@ -175,7 +218,7 @@ mod tests {
 }
 ```
 
-If a module depends on output of another program, then that output should be added to the match statement in [`utils.rs`](src/utils.rs). The match has to be exactly the same as the call to `utils::exec_cmd()`, including positional arguments and flags. The array of arguments are joined by a `" "`, so `utils::exec_cmd("program", &["arg", "more_args"])` would match with the `program arg more_args` match statement.
+If a module depends on output of another program, then that output should be added to the match statement in [`utils.rs`](src/utils.rs). The match has to be exactly the same as the call to `utils::exec_cmd()`, including positional arguments and flags. The array of arguments is joined by a `" "`, so `utils::exec_cmd("program", &["arg", "more_args"])` would match with the `program arg more_args` match statement.
 
 If the program cannot be mocked (e.g. It performs some filesystem operations, either writing or reading files) then it has to added to the project's GitHub Actions workflow file([`.github/workflows/workflow.yml`](.github/workflows/workflow.yml)) and the test has to be marked with an `#[ignored]`. This ensures that anyone can run the test suite locally without needing to pre-configure their environment. The `#[ignored]` attribute is bypassed during CI runs in GitHub Actions.
 
@@ -208,7 +251,7 @@ Changes to documentation can be viewed in a rendered state from the GitHub PR pa
 (go to the CI section at the bottom of the page and look for "deploy preview", then
 click on "details"). If you want to view changes locally as well, follow these steps.
 
-After cloning the project, you can do the following to run the VuePress website on your local machine:
+After cloning the project, you can do the following to run the VitePress website on your local machine:
 
 1. `cd` into the `/docs` directory.
 2. Install the project dependencies:
@@ -223,7 +266,7 @@ After cloning the project, you can do the following to run the VuePress website 
    npm run dev
    ```
 
-Once setup is complete, you can refer to VuePress documentation on the actual implementation here: <https://vuepress.vuejs.org/guide/>.
+Once setup is complete, you can refer to VitePress documentation on the actual implementation here: <https://vitepress.dev/guide/getting-started>.
 
 ## Git/GitHub workflow
 
@@ -249,7 +292,8 @@ everyone remember what they are. Don't worry: most of them are quite simple!
       appropriate--this is a bare minimum).
 - [ ] Add the variable to the appropriate location in the "Default Prompt
       Format" section of the documentation
-- [ ] Add an appropriate choice of options to each preset in `docs/presets/README.md`
+- [ ] Add an appropriate choice of options to each preset in `docs/public/presets/toml`
+- [ ] Update the config file schema by running `cargo run --features config-schema -- config-schema > .github/config-schema.json`
 - [ ] Create configs structs/traits in `src/configs/<module>.rs` and add the
       following:
   - [ ] An entry in `PROMPT_ORDER` (`src/configs/starship_root.rs`)
