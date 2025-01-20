@@ -53,15 +53,51 @@ $null = New-Module starship {
         }
         $process = [System.Diagnostics.Process]::Start($startInfo)
 
+        # Read the output and error streams asynchronously
+        # Avoids potential deadlocks when the child process fills one of the buffers
+        # https://docs.microsoft.com/en-us/dotnet/api/system.diagnostics.process.standardoutput?view=net-6.0#remarks
+        $stdout = $process.StandardOutput.ReadToEndAsync()
+        $stderr = $process.StandardError.ReadToEndAsync()
+        [System.Threading.Tasks.Task]::WaitAll(@($stdout, $stderr))
+
         # stderr isn't displayed with this style of invocation
         # Manually write it to console
-        $stderr = $process.StandardError.ReadToEnd().Trim()
-        if ($stderr -ne '') {
+        if ($stderr.Result.Trim() -ne '') {
             # Write-Error doesn't work here
-            $host.ui.WriteErrorLine($stderr)
+            $host.ui.WriteErrorLine($stderr.Result)
         }
 
-        $process.StandardOutput.ReadToEnd();
+        $stdout.Result;
+    }
+
+    function Enable-TransientPrompt {
+        Set-PSReadLineKeyHandler -Key Enter -ScriptBlock {
+            $previousOutputEncoding = [Console]::OutputEncoding
+            try {
+                $parseErrors = $null
+                [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$null, [ref]$null, [ref]$parseErrors, [ref]$null)
+                if ($parseErrors.Count -eq 0) {
+                    $script:TransientPrompt = $true
+                    [Console]::OutputEncoding = [Text.Encoding]::UTF8
+                    [Microsoft.PowerShell.PSConsoleReadLine]::InvokePrompt()
+                }
+            } finally {
+                if ($script:DoesUseLists) {
+                    # If PSReadline is set to display suggestion list, this workaround is needed to clear the buffer below
+                    # before accepting the current commandline. The max amount of items in the list is 10, so 12 lines
+                    # are cleared (10 + 1 more for the prompt + 1 more for current commandline).
+                    [Microsoft.PowerShell.PSConsoleReadLine]::Insert("`n" * [math]::Min($Host.UI.RawUI.WindowSize.Height - $Host.UI.RawUI.CursorPosition.Y - 1, 12))
+                    [Microsoft.PowerShell.PSConsoleReadLine]::Undo()
+                }
+                [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
+                [Console]::OutputEncoding = $previousOutputEncoding
+            }
+        }
+    }
+
+    function Disable-TransientPrompt {
+        Set-PSReadLineKeyHandler -Key Enter -Function AcceptLine
+        $script:TransientPrompt = $false
     }
 
     function global:prompt {
@@ -87,13 +123,13 @@ $null = New-Module starship {
             "--jobs=$($jobs)"
         )
 
-        # Whe start from the premise that the command executed correctly, which covers also the fresh console.
+        # We start from the premise that the command executed correctly, which covers also the fresh console.
         $lastExitCodeForPrompt = 0
         if ($lastCmd = Get-History -Count 1) {
             # In case we have a False on the Dollar hook, we know there's an error.
             if (-not $origDollarQuestion) {
-                # We retrieve the InvocationInfo from the most recent error using $error[0]
-                $lastCmdletError = try { $error[0] |  Where-Object { $_ -ne $null } | Select-Object -ExpandProperty InvocationInfo } catch { $null }
+                # We retrieve the InvocationInfo from the most recent error using $global:error[0]
+                $lastCmdletError = try { $global:error[0] |  Where-Object { $_ -ne $null } | Select-Object -ExpandProperty InvocationInfo } catch { $null }
                 # We check if the last command executed matches the line that caused the last error, in which case we know
                 # it was an internal Powershell command, otherwise, there MUST be an error code.
                 $lastExitCodeForPrompt = if ($null -ne $lastCmdletError -and $lastCmd.CommandLine -eq $lastCmdletError.Line) { 1 } else { $origLastExitCode }
@@ -105,8 +141,27 @@ $null = New-Module starship {
 
         $arguments += "--status=$($lastExitCodeForPrompt)"
 
+        if ([Microsoft.PowerShell.PSConsoleReadLine]::InViCommandMode()) {
+            $arguments += "--keymap=vi"
+        }
+
         # Invoke Starship
-        Invoke-Native -Executable ::STARSHIP:: -Arguments $arguments
+        $promptText = if ($script:TransientPrompt) {
+            $script:TransientPrompt = $false
+            if (Test-Path function:Invoke-Starship-TransientFunction) {
+                Invoke-Starship-TransientFunction
+            } else {
+                "$([char]0x1B)[1;32m❯$([char]0x1B)[0m "
+            }
+        } else {
+            Invoke-Native -Executable ::STARSHIP:: -Arguments $arguments
+        }
+
+        # Set the number of extra lines in the prompt for PSReadLine prompt redraw.
+        Set-PSReadLineOption -ExtraPromptLineCount ($promptText.Split("`n").Length - 1)
+
+        # Return the prompt
+        $promptText
 
         # Propagate the original $LASTEXITCODE from before the prompt function was invoked.
         $global:LASTEXITCODE = $origLastExitCode
@@ -135,6 +190,9 @@ $null = New-Module starship {
     # Disable virtualenv prompt, it breaks starship
     $ENV:VIRTUAL_ENV_DISABLE_PROMPT=1
 
+    $script:TransientPrompt = $false
+    $script:DoesUseLists = (Get-PSReadLineOption).PredictionViewStyle -eq 'ListView'
+
     if ($PSVersionTable.PSVersion.Major -gt 5) {
         $ENV:STARSHIP_SHELL = "pwsh"
     } else {
@@ -152,5 +210,26 @@ $null = New-Module starship {
         )
     )
 
-    Export-ModuleMember
+    try {
+        # Combine user defined ViModeChangeHandler if it exists
+        if((Get-PSReadLineOption).ViModeChangeHandler){
+            # &{...} to limit the scope of the GetNewClosure
+            & {
+                $originalHandler = (Get-PSReadLineOption).ViModeChangeHandler
+                Set-PSReadLineOption -ViModeChangeHandler {
+                    [Microsoft.PowerShell.PSConsoleReadLine]::InvokePrompt()
+                    & $originalHandler @args
+                }.GetNewClosure()
+            }
+        } else {
+            Set-PSReadLineOption -ViModeIndicator script -ViModeChangeHandler {
+                [Microsoft.PowerShell.PSConsoleReadLine]::InvokePrompt()
+            }
+        }
+    } catch {}
+
+    Export-ModuleMember -Function @(
+        "Enable-TransientPrompt"
+        "Disable-TransientPrompt"
+    )
 }

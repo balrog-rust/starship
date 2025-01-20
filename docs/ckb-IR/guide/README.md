@@ -9,7 +9,7 @@
 <p align="center">
   <a href="https://github.com/starship/starship/actions"
     ><img
-      src="https://img.shields.io/github/workflow/status/starship/starship/Main workflow/master?label=workflow&style=flat-square"
+      src="https://img.shields.io/github/actions/workflow/status/starship/starship/workflow.yml?branch=master&label=workflow&style=flat-square"
       alt="دۆخی ڕێڕەوی کارەکان لە GitHub Actions"
  /></a>
   <a href="https://crates.io/crates/starship"
@@ -31,6 +31,11 @@
     ><img
       src="https://img.shields.io/badge/twitter-@StarshipPrompt-1DA1F3?style=flat-square"
       alt="شوێن @StarshipPrompt بکەوە لەسەر تویتەر"
+ /></a>
+  <a href="https://stand-with-ukraine.pp.ua"
+    ><img
+      src="https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraineFlat.svg"
+      alt="Stand With Ukraine"
  /></a>
 </p>
 
@@ -99,7 +104,7 @@
     ><img
       height="20"
       src="https://raw.githubusercontent.com/starship/starship/master/media/flag-br.png"
-      alt="Português do Brasil"
+      alt="پورتوگالیی بەڕازیل"
  /></a>
   &nbsp;
   <a
@@ -108,6 +113,14 @@
       height="20"
       src="https://raw.githubusercontent.com/starship/starship/master/media/flag-ru.png"
       alt="Русский"
+ /></a>
+  &nbsp;
+  <a
+    href="https://github.com/starship/starship/blob/master/docs/uk-UA/guide/README.md"
+    ><img
+      height="20"
+      src="https://raw.githubusercontent.com/starship/starship/master/media/flag-ua.png"
+      alt="Українська"
  /></a>
   &nbsp;
   <a
@@ -163,161 +176,228 @@
 
 ### پێشمەرجەکان
 
-- فۆنتێکی [Nerd](https://www.nerdfonts.com/) دامەزرابێ و چالاککرابێ لە تێرمیناڵەکەتدا (بۆ نموونە، [Fira Code Nerd Font](https://www.nerdfonts.com/font-downloads) تاقی بکەرەوە).
+- A [Nerd Font](https://www.nerdfonts.com/) installed and enabled in your terminal (for example, try the [FiraCode Nerd Font](https://www.nerdfonts.com/font-downloads)).
 
-### دەستپێکردن
+### Step 1. Install Starship
 
-**تێبینی**: بەهۆی خێرا گۆڕانی سەکۆ جیاوازەکان، تەنها بەشێک لە سەکۆ پشتگیری کراوەکان لە خوارەوە پشاندراون. ناتوانی ئەو سەکۆیە ببینیت کە ئەتەوێ؟ سەیری [ڕێنماییەکانی سەکۆکانی تر](https://starship.rs/installing/) بکە.
+Select your operating system from the list below to view installation instructions:
 
-1. باینەری **starship** دابمەزرێنە:
+<details>
+<summary>Android</summary>
 
+Install Starship using any of the following package managers:
 
-   #### کۆتا وەشان دابمەزرێنە
+| Repository                                                                        | Instructions           |
+| --------------------------------------------------------------------------------- | ---------------------- |
+| [Termux](https://github.com/termux/termux-packages/tree/master/packages/starship) | `pkg install starship` |
 
+</details>
 
-   ##### لە باینەرییە پێشوەخت دروستکراوەکانەوە، لەگەڵ شێڵی:
+<details>
+<summary>BSD</summary>
 
-   ```sh
-   sh -c "$(curl -fsSL https://starship.rs/install.sh)"
-   ```
+Install Starship using any of the following package managers:
 
-   بۆ نوێکردنەوەی Starship خۆی، نووسینەکەی سەرەوە ڕەن بکەوە. وەشانی ئێستا دەگۆڕێت بێ ئەوەی دەسکاری ڕێکخستنەکانی Starship بکات.
+| Distribution | Repository                                               | Instructions                      |
+| ------------ | -------------------------------------------------------- | --------------------------------- |
+| **_Any_**    | **[crates.io](https://crates.io/crates/starship)**       | `cargo install starship --locked` |
+| FreeBSD      | [FreshPorts](https://www.freshports.org/shells/starship) | `pkg install starship`            |
+| NetBSD       | [pkgsrc](https://pkgsrc.se/shells/starship)              | `pkgin install starship`          |
 
-   **تێبینی** - بنەڕەتییەکانی سکریپتی دامەزراندن ئەتوانرێ بگۆڕدرێ سەیری یارمەتی نێوخۆیی بکە.
+</details>
 
-   ```sh
-   sh -c "$(curl -fsSL https://starship.rs/install.sh)" -- --help
-   ```
+<details>
+<summary>Linux</summary>
 
+Install the latest version for your system:
 
-   #### دابمەزرێنە لەڕێگەی بەڕێوبەری گورزەوە
+```sh
+curl -sS https://starship.rs/install.sh | sh
+```
 
+Alternatively, install Starship using any of the following package managers:
 
-   ##### لەگەڵ [Homebrew](https://brew.sh/):
+| Distribution       | Repository                                                                                      | Instructions                                                                   |
+| ------------------ | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| **_Any_**          | **[crates.io](https://crates.io/crates/starship)**                                              | `cargo install starship --locked`                                              |
+| _Any_              | [conda-forge](https://anaconda.org/conda-forge/starship)                                        | `conda install -c conda-forge starship`                                        |
+| _Any_              | [Linuxbrew](https://formulae.brew.sh/formula/starship)                                          | `brew install starship`                                                        |
+| Alpine Linux 3.13+ | [Alpine Linux Packages](https://pkgs.alpinelinux.org/packages?name=starship)                    | `apk add starship`                                                             |
+| Arch Linux         | [Arch Linux Extra](https://archlinux.org/packages/extra/x86_64/starship)                        | `pacman -S starship`                                                           |
+| CentOS 7+          | [Copr](https://copr.fedorainfracloud.org/coprs/atim/starship)                                   | `dnf copr enable atim/starship` <br /> `dnf install starship` |
+| Gentoo             | [Gentoo Packages](https://packages.gentoo.org/packages/app-shells/starship)                     | `emerge app-shells/starship`                                                   |
+| Manjaro            |                                                                                                 | `pacman -S starship`                                                           |
+| NixOS              | [nixpkgs](https://github.com/NixOS/nixpkgs/blob/master/pkgs/tools/misc/starship/default.nix)    | `nix-env -iA nixpkgs.starship`                                                 |
+| openSUSE           | [OSS](https://software.opensuse.org/package/starship)                                           | `zypper in starship`                                                           |
+| Void Linux         | [Void Linux Packages](https://github.com/void-linux/void-packages/tree/master/srcpkgs/starship) | `xbps-install -S starship`                                                     |
 
-   ```sh
-   brew install starship
-   ```
+</details>
 
+<details>
+<summary>macOS</summary>
 
-   ##### لەگەڵ [Scoop](https://scoop.sh):
+Install the latest version for your system:
 
-   ```powershell
-   scoop install starship
-   ```
+```sh
+curl -sS https://starship.rs/install.sh | sh
+```
 
-2. نوسینی init زیادبکە بۆ فایلی ڕێکخستنی شێڵەکەت:
+Alternatively, install Starship using any of the following package managers:
 
+| Repository                                               | Instructions                            |
+| -------------------------------------------------------- | --------------------------------------- |
+| **[crates.io](https://crates.io/crates/starship)**       | `cargo install starship --locked`       |
+| [conda-forge](https://anaconda.org/conda-forge/starship) | `conda install -c conda-forge starship` |
+| [Homebrew](https://formulae.brew.sh/formula/starship)    | `brew install starship`                 |
+| [MacPorts](https://ports.macports.org/port/starship)     | `port install starship`                 |
 
-   #### Bash
+</details>
 
-   ئەمەی خوارەوە زیادبکە لە کۆتایی `~/.bashrc`:
+<details>
+<summary>Windows</summary>
 
-   ```sh
-   # ~/.bashrc
+Install the latest version for your system with the MSI-installers from the [releases section](https://github.com/starship/starship/releases/latest).
 
-   eval "$(starship init bash)"
-   ```
+Install Starship using any of the following package managers:
 
+| Repository                                                                                   | Instructions                            |
+| -------------------------------------------------------------------------------------------- | --------------------------------------- |
+| **[crates.io](https://crates.io/crates/starship)**                                           | `cargo install starship --locked`       |
+| [Chocolatey](https://community.chocolatey.org/packages/starship)                             | `choco install starship`                |
+| [conda-forge](https://anaconda.org/conda-forge/starship)                                     | `conda install -c conda-forge starship` |
+| [Scoop](https://github.com/ScoopInstaller/Main/blob/master/bucket/starship.json)             | `scoop install starship`                |
+| [winget](https://github.com/microsoft/winget-pkgs/tree/master/manifests/s/Starship/Starship) | `winget install --id Starship.Starship` |
 
-   #### Fish
+</details>
 
-   ئەمەی خوارەوە زیادبکە لە کۆتایی `~/.config/fish/config.fish`:
+### Step 2. Set up your shell to use Starship
 
-   ```sh
-   # ~/.config/fish/config.fish
+Configure your shell to initialize starship. Select yours from the list below:
 
-   starship init fish | source
-   ```
+<details>
+<summary>Bash</summary>
 
+ئەمەی خوارەوە زیادبکە لە کۆتایی `~/.bashrc`:
 
-   #### Zsh
+```sh
+eval "$(starship init bash)"
+```
 
-   ئەمەی خوارەوە زیادبکە لە کۆتایی `~/.zshrc`:
+</details>
 
-   ```sh
-   # ~/.zshrc
+<details>
+<summary>Cmd</summary>
 
-   eval "$(starship init zsh)"
-   ```
+You need to use [Clink](https://chrisant996.github.io/clink/clink.html) (v1.2.30+) with Cmd. Create a file at this path `%LocalAppData%\clink\starship.lua` with the following contents:
 
+```lua
+load(io.popen('starship init cmd'):read("*a"))()
+```
 
-   #### PowerShell
+</details>
 
-   ئەمەی خوارەوە زیادبکە لە کۆتایی `Microsoft.PowerShell_profile.ps1`. ئەتوانی شوێنی ئەم فایلە ببینیتەوە بە سەیرکردنی گۆڕاوی `$PROFILE` لە PowerShell. ئاسایی ڕێڕەوەکە بریتیە لە `~\Documents\PowerShell\Microsoft.PowerShell_profile.ps1` یان `/.config/powershell/Microsoft.PowerShell_profile.ps1` لەسەر -Nix.
+<details>
+<summary>Elvish</summary>
 
-   ```powershell
-   Invoke-Expression (&starship init powershell)
-   ```
+ئەمەی خوارەوە زیادبکە لە کۆتایی `~/.elvish/rc.elv`:
 
+```sh
+eval (starship init elvish)
+```
 
-   #### Ion
+Note: Only Elvish v0.18+ is supported
 
-   ئەمەی خوارەوە زیادبکە لە کۆتایی `~/.config/ion/initrc`:
+</details>
 
-   ```sh
-   # ~/.config/ion/initrc
+<details>
+<summary>Fish</summary>
 
-   eval $(starship init ion)
-   ```
+ئەمەی خوارەوە زیادبکە لە کۆتایی `~/.config/fish/config.fish`:
 
+```fish
+starship init fish | source
+```
 
-   #### Elvish
+</details>
 
-   **Warning** Only elvish v0.17 or higher is supported. ئەمەی خوارەوە زیادبکە لە کۆتایی `~/.elvish/rc.elv`:
+<details>
+<summary>Ion</summary>
 
-   ```sh
-   # ~/.elvish/rc.elv
+ئەمەی خوارەوە زیادبکە لە کۆتایی `~/.config/ion/initrc`:
 
-   eval (starship init elvish)
-   ```
+```sh
+eval $(starship init ion)
+```
 
+</details>
 
-   #### Tcsh
+<details>
+<summary>Nushell</summary>
 
-   ئەمەی خوارەوە زیادبکە لە کۆتایی `~/.tcshrc`:
+Add the following to the end of your Nushell configuration (find it by running `$nu.config-path` in Nushell):
 
-   ```sh
-   # ~/.tcshrc
+```sh
+mkdir ($nu.data-dir | path join "vendor/autoload")
+starship init nu | save -f ($nu.data-dir | path join "vendor/autoload/starship.nu")
+```
 
-   eval `starship init tcsh`
-   ```
+Note: Only Nushell v0.96+ is supported
 
+</details>
 
-   #### Xonsh
+<details>
+<summary>PowerShell</summary>
 
-   ئەمەی دێت زیادبکە بۆ کۆتایی پەڕگەی `~/.xonshrc`:
+Add the following to the end of your PowerShell configuration (find it by running `$PROFILE`):
 
-   ```sh
-   # ~/.xonshrc
+```powershell
+Invoke-Expression (&starship init powershell)
+```
 
-   execx($(starship init xonsh))
-   ```
+</details>
 
+<details>
+<summary>Tcsh</summary>
 
-   #### Cmd
+ئەمەی خوارەوە زیادبکە لە کۆتایی `~/.tcshrc`:
 
-   You need to use [Clink](https://chrisant996.github.io/clink/clink.html) (v1.2.30+) with Cmd. Add the following to a file `starship.lua` and place this file in Clink scripts directory:
+```sh
+eval `starship init tcsh`
+```
 
-   ```lua
-   -- starship.lua
+</details>
 
-   load(io.popen('starship init cmd'):read("*a"))()
-   ```
+<details>
+<summary>Xonsh</summary>
 
+ئەمەی دێت زیادبکە بۆ کۆتایی پەڕگەی `~/.xonshrc`:
 
-   #### Nushell
+```python
+execx($(starship init xonsh))
+```
 
-   **Warning** This will change in the future. تەنها وەشانی v0.33 یان بەرزتری nu پشتگیریکراوە. Add the following to your nu config file. ئەتوانی شوێنی ئەم پەڕگەیە بپشکنی بە جێبەجێکردنی `config path` لە nu دا.
+</details>
 
-   ```toml
-   startup = [
-    "mkdir ~/.cache/starship",
-    "starship init nu | save ~/.cache/starship/init.nu",
-    "source ~/.cache/starship/init.nu"
-   ]
-   prompt = "starship_prompt"
-   ```
+<details>
+<summary>Zsh</summary>
+
+ئەمەی خوارەوە زیادبکە لە کۆتایی `~/.zshrc`:
+
+```sh
+eval "$(starship init zsh)"
+```
+
+</details>
+
+### Step 3. Configure Starship
+
+Start a new shell instance, and you should see your beautiful new shell prompt. If you're happy with the defaults, enjoy!
+
+If you're looking to further customize Starship:
+
+- **[Configuration](https://starship.rs/config/)** – learn how to configure Starship to tweak your prompt to your liking
+
+- **[Presets](https://starship.rs/presets/)** – get inspired by the pre-built configuration of others
 
 ## 🤝 بەژداریکردن
 
@@ -331,11 +411,26 @@
 
 تکایە ئەم کارە کۆنانە سەیربکەوە کە ئیلهامی دروستکردنی starship دا. 🙏
 
-- **[denysdovhan/spaceship-prompt](https://github.com/denysdovhan/spaceship-prompt)** - یەکێ لە promptـەکانی ZSH بۆ ئاسمانەوانان.
+- **[denysdovhan/spaceship-prompt](https://github.com/denysdovhan/spaceship-prompt)** – A ZSH prompt for astronauts.
 
-- **[denysdovhan/robbyrussell-node](https://github.com/denysdovhan/robbyrussell-node)** - ڕووکاری robbyrussellـی شێڵ نەناس کە بە جاڤاسکریپت نووسراوە.
+- **[denysdovhan/robbyrussell-node](https://github.com/denysdovhan/robbyrussell-node)** – Cross-shell robbyrussell theme written in JavaScript.
 
-- **[reujab/silver](https://github.com/reujab/silver)** - یەکێ لە promptـە شێڵ نەناسە دڵخوازکراوەکان کە لە powerline دەچێ لەگەڵ ئایکۆندا.
+- **[reujab/silver](https://github.com/reujab/silver)** – A cross-shell customizable powerline-like prompt with icons.
+
+## ❤️ Sponsors
+
+Support this project by [becoming a sponsor](https://github.com/sponsors/starship). Your name or logo will show up here with a link to your website.
+
+## 🔒 Code Signing Policy
+
+Free code signing provided by [SignPath.io](https://signpath.io), certificate by [SignPath Foundation](https://signpath.org).
+
+Code Signing Roles:
+
+- Reviewers: [Astronauts](https://github.com/orgs/starship/teams/astronauts)
+- Approvers and Authors: [Mission Control](https://github.com/orgs/starship/teams/mission-control)
+
+This program will not transfer any information to other networked systems unless specifically requested by the user or the person installing or operating it.
 
 <p align="center">
     <br>

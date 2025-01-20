@@ -76,7 +76,7 @@ format = "took [$duration]($style) "
 
 ### Affected Modules
 
-#### Character
+#### 字符
 
 | Removed Property        | Replacement      |
 | ----------------------- | ---------------- |
@@ -85,7 +85,7 @@ format = "took [$duration]($style) "
 | `style_success`         | `success_symbol` |
 | `style_failure`         | `error_symbol`   |
 
-**Changes to the Default Configuration**
+**更改默认配置**
 
 ```diff
 [character]
@@ -109,7 +109,7 @@ To configure the prompt to use the older `use_symbol_for_status = true` configur
 error_symbol = "[✖](bold red)"
 ```
 
-*Note:* The `character` element automatically adds a space after, so unlike the other `format` strings, we specifically do not add one in the above examples.
+_Note:_ The `character` element automatically adds a space after, so unlike the other `format` strings, we specifically do not add one in the above examples.
 
 #### Command Duration
 
@@ -117,7 +117,7 @@ error_symbol = "[✖](bold red)"
 | ---------------- | ----------- |
 | `prefix`         | `format`    |
 
-**Changes to the Default Configuration**
+**更改默认配置**
 
 ```diff
 [cmd_duration]
@@ -131,7 +131,7 @@ error_symbol = "[✖](bold red)"
 | ---------------- | ----------- |
 | `prefix`         | `format`    |
 
-**Changes to the Default Configuration**
+**更改默认配置**
 
 ```diff
 [directory]
@@ -146,7 +146,7 @@ error_symbol = "[✖](bold red)"
 | `prefix`         | `format`    |
 | `suffix`         | `format`    |
 
-**Changes to the Default Configuration**
+**更改默认配置**
 
 ```diff
 [env_var]
@@ -162,7 +162,7 @@ error_symbol = "[✖](bold red)"
 | `prefix`         | `format`    |
 | `suffix`         | `format`    |
 
-**Changes to the Default Configuration**
+**更改默认配置**
 
 ```diff
 [git_commit]
@@ -179,7 +179,7 @@ error_symbol = "[✖](bold red)"
 | `suffix`          | `format`    |
 | `show_sync_count` | `format`    |
 
-**Changes to the Default Configuration**
+**更改默认配置**
 
 ```diff
 [git_status]
@@ -209,7 +209,7 @@ behind = "⇣${count}"
 | `prefix`         | `format`    |
 | `suffix`         | `format`    |
 
-**Changes to the Default Configuration**
+**更改默认配置**
 
 ```diff
 [hostname]
@@ -226,7 +226,7 @@ behind = "⇣${count}"
 | `prefix`         | `format`    |
 | `suffix`         | `format`    |
 
-**Changes to the Default Configuration**
+**更改默认配置**
 
 ```diff
 [singularity]
@@ -235,13 +235,13 @@ behind = "⇣${count}"
 ++ format = '[$symbol\[$env\]]($style) '
 ```
 
-#### Time
+#### 时间
 
 | Removed Property | Replacement   |
 | ---------------- | ------------- |
 | `format`         | `time_format` |
 
-**Changes to the Default Configuration**
+**更改默认配置**
 
 ```diff
 [time]
@@ -250,14 +250,14 @@ behind = "⇣${count}"
 ++ format = "at 🕙[$time]($style) "
 ```
 
-#### Custom Commands
+#### 自定义命令
 
 | Removed Property | Replacement |
 | ---------------- | ----------- |
 | `prefix`         | `format`    |
 | `suffix`         | `format`    |
 
-**Changes to the Default Configuration**
+**更改默认配置**
 
 ```diff
 [custom.example]

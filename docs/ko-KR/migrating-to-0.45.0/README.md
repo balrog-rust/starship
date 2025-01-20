@@ -80,7 +80,7 @@ format = "took [$duration]($style) "
 
 | Removed Property        | Replacement      |
 | ----------------------- | ---------------- |
-| `symbol`                | `success_symbol` |
+| `기호`                    | `success_symbol` |
 | `use_symbol_for_status` | `error_symbol`   |
 | `style_success`         | `success_symbol` |
 | `style_failure`         | `error_symbol`   |
@@ -109,7 +109,7 @@ To configure the prompt to use the older `use_symbol_for_status = true` configur
 error_symbol = "[✖](bold red)"
 ```
 
-*Note:* The `character` element automatically adds a space after, so unlike the other `format` strings, we specifically do not add one in the above examples.
+_Note:_ The `character` element automatically adds a space after, so unlike the other `format` strings, we specifically do not add one in the above examples.
 
 #### Command Duration
 
